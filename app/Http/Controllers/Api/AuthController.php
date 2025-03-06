@@ -69,19 +69,18 @@ class AuthController extends Controller
               if ($request->hasFile('avatar')) {
                   $userData['avatar'] = $request->file('avatar')->store('avatars', 'public');
               }
-              dd($request->all());
+
               $user = User::create([
                   'phone_country_code' => $userData['phone_country_code'],
-                  'phone_number',
-                  'email',
-                  'first_name',
-                  'last_name',
-                  'gender',
-                  'avatar',
-                  'agree_terms',
-                  'is_email_verified',
-                  'email_verified_at',
-                  'password'
+                  'phone_number'=>$userData['phone_number'],
+                  'email'=>$userData['email'],
+                  'first_name'=>$userData['first_name'],
+                  'last_name'=>$userData['last_name'],
+                  'gender'=>$userData['gender'],
+                  'agree_terms'=>$userData['agree_terms'],
+                  'password'=>$userData['password'],
+                  'avatar'=>$userData['avatar'],
+
               ]);
 
               $otp = rand(1000, 9999);
@@ -107,6 +106,7 @@ class AuthController extends Controller
               );
 
           } catch (\Exception $e) {
+//              dd($e->getMessage());
               DB::rollBack();
               return $this->errorResponse('فشل في عملية التسجيل', 500);
           }
@@ -128,7 +128,6 @@ class AuthController extends Controller
             'phone_number.regex' => 'صيغة رقم الهاتف غير صحيحة',
             'password.required' => 'كلمة المرور مطلوبة',
         ]);
-
         $phoneNumber = ltrim(preg_replace('/[^0-9]/', '', $validated['phone_number']), '0');
 
         $user = User::where('phone_country_code', $validated['phone_country_code'])
@@ -156,16 +155,16 @@ class AuthController extends Controller
 
     public function verifyOtp(Request $request)
     {
+
         $validated = $request->validate([
-            'otp' => 'required|string|size:6',
+            'otp' => 'required|string|size:4',
             'type' => 'required|in:email,phone'
         ], [
             'otp.required' => 'رمز التحقق مطلوب',
-            'otp.size' => 'رمز التحقق يجب أن يكون 6 أرقام',
+            'otp.size' => 'رمز التحقق يجب أن يكون 4 أرقام',
             'type.required' => 'نوع التحقق مطلوب',
             'type.in' => 'نوع التحقق غير صحيح',
         ]);
-
         try {
             $verification = UserVerification::where('user_id', auth()->id())
                 ->where('type', $request->type)
@@ -214,10 +213,9 @@ class AuthController extends Controller
             'type.required' => 'نوع التحقق مطلوب',
             'type.in' => 'نوع التحقق غير صحيح',
         ]);
-
         try {
             $user = auth()->user();
-            $otp = $this->generateOTP();
+            $otp = rand(1000, 9999);
 
             UserVerification::create([
                 'user_id' => $user->id,
@@ -264,5 +262,15 @@ class AuthController extends Controller
         }
     }
 
+    public function logout(Request $request)
+    {
+        try {
+            $request->user()->tokens()->delete();
+
+            return $this->successResponse(null, 'تم تسجيل الخروج بنجاح');
+        } catch (\Exception $e) {
+            return $this->errorResponse('فشل في تسجيل الخروج', 500);
+        }
+    }
 
 }
