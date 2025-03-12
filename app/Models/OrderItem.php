@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class OrderItem extends Model
 {
   protected $fillable = [
-      'order_id', 'ad_id', 'title', 'unit_price',
+      'order_id', 'itemable_id',
+      'itemable_type', 'title', 'unit_price',
       'quantity', 'packaging_options', 'subtotal', 'status'
   ];
 
@@ -16,10 +17,10 @@ class OrderItem extends Model
       return $this->belongsTo(Order::class);
   }
 
-  public function ad()
-  {
-      return $this->belongsTo(Ad::class);
-  }
+    public function itemable()
+    {
+        return $this->morphTo();
+    }
 
   public function vendor()
   {

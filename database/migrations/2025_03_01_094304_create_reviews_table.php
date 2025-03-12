@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('reviews', function (Blueprint $table) {
           $table->id();
           $table->foreignId('user_id')->constrained()->onDelete('cascade');
-          $table->foreignId('ad_id')->constrained()->onDelete('cascade');
+          $table->morphs('reviewable');
           $table->foreignId('order_id')->nullable()->constrained()->onDelete('set null');
           $table->unsignedTinyInteger('rating');
           $table->text('comment')->nullable();
@@ -26,8 +26,8 @@ return new class extends Migration
           $table->softDeletes();
           $table->timestamps();
 
-          $table->unique(['user_id', 'ad_id', 'order_id'], 'unique_user_ad_order_review');
-          $table->index(['ad_id', 'is_approved']);
+          $table->unique(['user_id','reviewable_id', 'order_id'], 'unique_user_ad_order_review');
+          $table->index([ 'reviewable_id','is_approved']);
           $table->index('rating');
         });
     }

@@ -10,7 +10,8 @@ class Review extends Model
   use SoftDeletes;
 
   protected $fillable = [
-      'user_id', 'ad_id', 'order_id', 'vendor_id', 'rating', 'comment', 'images',
+      'user_id','reviewable_id',
+      'reviewable_type', 'order_id', 'vendor_id', 'rating', 'comment', 'images',
       'is_approved', 'is_anonymous', 'helpful_votes', 'approved_at'
   ];
 
@@ -23,10 +24,10 @@ class Review extends Model
       return $this->belongsTo(User::class);
   }
 
-  public function ad()
-  {
-      return $this->belongsTo(Ad::class);
-  }
+    public function reviewable()
+    {
+        return $this->morphTo();
+    }
 
   public function order()
   {

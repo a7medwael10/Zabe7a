@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('phone_country_code', 5);
             $table->string('phone_number', 20);
             $table->string('email')->unique();
-            $table->string('first_name', 50);
-            $table->string('last_name', 50);
+            $table->string('first_name', 50)->nullable();
+            $table->string('last_name', 50)->nullable();
             $table->enum('gender', ['male', 'female'])->nullable();
             $table->string('avatar')->nullable();
             $table->boolean('agree_terms')->default(false);

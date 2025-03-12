@@ -16,9 +16,7 @@ return new class extends Migration
           $table->string('image_path');
           $table->string('title', 100)->nullable();
           $table->text('description')->nullable();
-          $table->enum('target_type', ['category', 'ad', 'external_url', 'none'])->nullable();
-          $table->unsignedBigInteger('target_id')->nullable();
-          $table->string('target_url')->nullable();
+          $table->morphs('sliderable');
           $table->integer('sort_order')->unsigned()->default(0);
           $table->boolean('is_active')->default(true);
           $table->timestamps();

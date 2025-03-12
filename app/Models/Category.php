@@ -10,21 +10,27 @@ class Category extends Model
   use SoftDeletes;
 
   protected $fillable = [
-      'parent_id', 'name', 'slug', 'logo', 'description', 'sort_order', 'is_active'
+      'section_id', 'name', 'slug', 'logo', 'description', 'sort_order', 'is_active'
   ];
 
-  public function parent()
-  {
-      return $this->belongsTo(Category::class, 'parent_id');
-  }
 
-  public function children()
-  {
-      return $this->hasMany(Category::class, 'parent_id');
-  }
+    public function section()
+    {
+        return $this->belongsTo(Section::class);
+    }
 
   public function ads()
   {
       return $this->hasMany(Ad::class);
   }
+
+    public function offers()
+    {
+        return $this->hasMany(Offer::class);
+    }
+
+    public function sliders()
+    {
+        return $this->morphMany(Slider::class, 'sliderable');
+    }
 }

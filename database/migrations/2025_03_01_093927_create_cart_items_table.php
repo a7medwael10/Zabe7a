@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('cart_items', function (Blueprint $table) {
           $table->id();
           $table->foreignId('cart_id')->constrained()->onDelete('cascade');
-          $table->foreignId('ad_id')->constrained()->onDelete('cascade');
+          $table->morphs('itemable');
           $table->decimal('unit_price', 10, 2)->unsigned();
           $table->integer('quantity')->unsigned()->default(1);
           $table->json('packaging_options')->nullable();
@@ -22,7 +22,7 @@ return new class extends Migration
           $table->decimal('subtotal', 10, 2)->unsigned()->default(0.00);
           $table->timestamps();
 
-          $table->index(['cart_id', 'ad_id']);
+          $table->index(['itemable_id','cart_id']);
         });
     }
 

@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('ads', function (Blueprint $table) {
           $table->id();
-          $table->foreignId('user_id')->constrained()->onDelete('cascade');
           $table->foreignId('category_id')->constrained()->onDelete('restrict');
           $table->string('title', 150);
+          $table->string('sub_title', 150)->nullable();
           $table->string('slug', 170)->unique();
           $table->string('thumbnail_path')->nullable();
           $table->text('description');
@@ -32,7 +32,7 @@ return new class extends Migration
           $table->softDeletes();
           $table->timestamps();
 
-          $table->index(['user_id', 'status', 'category_id']);
+          $table->index([ 'status', 'category_id']);
         });
     }
 

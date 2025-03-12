@@ -10,7 +10,7 @@ class Ad extends Model
   use SoftDeletes;
 
   protected $fillable = [
-      'user_id', 'category_id', 'title', 'slug', 'description',
+      'thumbnail_path', 'category_id', 'title','sub_title', 'slug', 'description',
       'price', 'quantity_available', 'quantity_sold', 'weight',
       'rating', 'views_count', 'reviews_count', 'status', 'approved_at', 'expires_at'
   ];
@@ -37,26 +37,61 @@ class Ad extends Model
 
   public function packagingOptions()
   {
-      return $this->hasMany(AdPackagingOption::class);
+      return $this->morphMany(AdPackagingOption::class, 'packageable');
   }
 
-  public function cartItems()
-  {
-      return $this->hasMany(CartItem::class);
-  }
+    public function cartItems()
+    {
+        return $this->morphMany(CartItem::class, 'itemable');
+    }
 
-  public function orderItems()
-  {
-      return $this->hasMany(OrderItem::class);
-  }
+    public function orderItems()
+    {
+        return $this->morphMany(OrderItem::class, 'itemable');
+    }
 
-  public function favorites()
-  {
-      return $this->hasMany(Favorite::class);
-  }
+    public function favorites()
+    {
+        return $this->morphMany(Favorite::class, 'favoritable');
+    }
 
-  public function reviews()
-  {
-      return $this->hasMany(Review::class);
-  }
+    public function reviews()
+    {
+        return $this->morphMany(Review::class, 'reviewable');
+    }
+
+    public function sliders()
+    {
+        return $this->morphMany(Slider::class, 'sliderable');
+    }
+
+    public function scopeBestSelling($query)
+    {
+        return $query->where('status', 'active')
+        ->orderByDesc('quantity_sold');
+    }
+
+    public function scopeHighestRated($query)
+    {
+        return $query->where('status', 'active')
+            ->orderByDesc('rating');
+    }
+
+    public function scopePriceHighToLow($query)
+    {
+        return $query->where('status', 'active')
+            ->orderByDesc('price');
+    }
+
+    public function scopePriceLowToHigh($query)
+    {
+        return $query->where('status', 'active')
+            ->orderBy('price');
+    }
+
+    public function scopeOurSuggestions($query)
+    {
+        return $query->where('status', 'active')
+            ->orderByDesc('created_at');
+    }
 }

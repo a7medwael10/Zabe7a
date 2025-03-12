@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RegisterRequest;
 use App\Jobs\SendOtpJob;
 use App\Models\User;
 use App\Models\UserVerification;
-use App\Models\Address;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
@@ -16,70 +17,27 @@ class AuthController extends Controller
 {
     use ApiResponse;
 
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
       {
-          $validated = $request->validate([
-              'phone_country_code' => 'required|string|max:5',
-              'phone_number' => [
-                  'required',
-                  'string',
-                  'regex:/^[0-9]\d{6,14}$/',
-                  'unique:users,phone_number,NULL,id,phone_country_code,' . $request->phone_country_code,
-              ],
-              'email' => 'required|email|unique:users',
-              'first_name' => 'required|string|max:50',
-              'last_name' => 'required|string|max:50',
-              'gender' => 'nullable|in:male,female',
-              'password' => 'required|string|min:8|confirmed',
-              'agree_terms' => 'required|accepted',
-              'avatar' => 'nullable|image|max:2048',
-          ], [
-              'phone_country_code.required' => 'رمز البلد مطلوب',
-              'phone_number.required' => 'رقم الهاتف مطلوب',
-              'phone_number.regex' => 'صيغة رقم الهاتف غير صحيحة',
-              'phone_number.unique' => 'رقم الهاتف مستخدم مسبقاً',
-              'email.required' => 'البريد الإلكتروني مطلوب',
-              'email.email' => 'صيغة البريد الإلكتروني غير صحيحة',
-              'email.unique' => 'البريد الإلكتروني مستخدم مسبقاً',
-              'first_name.required' => 'الاسم الأول مطلوب',
-              'last_name.required' => 'الاسم الأخير مطلوب',
-              'password.required' => 'كلمة المرور مطلوبة',
-              'password.min' => 'كلمة المرور يجب أن تكون 8 أحرف على الأقل',
-              'password.confirmed' => 'كلمة المرور غير متطابقة',
-              'agree_terms.required' => 'يجب الموافقة على الشروط والأحكام',
-              'agree_terms.accepted' => 'يجب الموافقة على الشروط والأحكام',
-              'avatar.image' => 'الصورة يجب أن تكون ملف صورة صالح',
-          ]);
+          $validated = $request->validated();
 
           try {
 
               $phoneNumber = ltrim(preg_replace('/[^0-9]/', '', $validated['phone_number']), '0');
 
               $userData = [
-                  'phone_country_code' => $validated['phone_country_code'],
+                  'phone_country_code' => '+966',
                   'phone_number' => $phoneNumber,
                   'email' => $validated['email'],
-                  'first_name' => $validated['first_name'],
-                  'last_name' => $validated['last_name'],
-                  'gender' => $validated['gender'],
-                  'password' => Hash::make($validated['password']),
                   'agree_terms' => true,
               ];
-
-              if ($request->hasFile('avatar')) {
-                  $userData['avatar'] = $request->file('avatar')->store('avatars', 'public');
-              }
 
               $user = User::create([
                   'phone_country_code' => $userData['phone_country_code'],
                   'phone_number'=>$userData['phone_number'],
                   'email'=>$userData['email'],
-                  'first_name'=>$userData['first_name'],
-                  'last_name'=>$userData['last_name'],
-                  'gender'=>$userData['gender'],
                   'agree_terms'=>$userData['agree_terms'],
-                  'password'=>$userData['password'],
-                  'avatar'=>$userData['avatar'],
+                  'password'=> Hash::make($validated['password'])
 
               ]);
 
@@ -94,19 +52,16 @@ class AuthController extends Controller
 
               SendOtpJob::dispatch($user->email, $otp, 'email');
 
-              $token = $user->createToken('auth_token')->plainTextToken;
 
               return $this->successResponse(
                   [
-                      'user' => $user,
-                      'token' => $token
+                      'user' => $userData,
                   ],
                   'تم التسجيل بنجاح. الرجاء تفعيل البريد الإلكتروني',
                   201
               );
 
           } catch (\Exception $e) {
-//              dd($e->getMessage());
               DB::rollBack();
               return $this->errorResponse('فشل في عملية التسجيل', 500);
           }
@@ -115,27 +70,31 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validated = $request->validate([
-            'phone_country_code' => 'required|string|max:5',
             'phone_number' => [
                 'required',
                 'string',
                 'regex:/^[0-9]\d{6,14}$/',
             ],
             'password' => 'required|string',
-        ], [
-            'phone_country_code.required' => 'رمز البلد مطلوب',
+        ],
+            [
             'phone_number.required' => 'رقم الهاتف مطلوب',
             'phone_number.regex' => 'صيغة رقم الهاتف غير صحيحة',
             'password.required' => 'كلمة المرور مطلوبة',
-        ]);
+        ]
+        );
         $phoneNumber = ltrim(preg_replace('/[^0-9]/', '', $validated['phone_number']), '0');
 
-        $user = User::where('phone_country_code', $validated['phone_country_code'])
-            ->where('phone_number', $phoneNumber)
+
+        if (!Auth::attempt(['phone_number' => $phoneNumber, 'password' => $validated['password']])) {
+            return $this->errorResponse('بيانات الدخول غير صحيحة', 401);
+        }
+
+        $user = User::where('phone_number', $phoneNumber)
             ->first();
 
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
-            return $this->errorResponse('بيانات الدخول غير صحيحة', 401);
+        if(!$user->is_email_verified){
+            return $this->errorResponse('الرجاء تفعيل البريد الإلكتروني', 401);
         }
 
         try {
@@ -143,7 +102,6 @@ class AuthController extends Controller
 
             return $this->successResponse(
                 [
-                    'user' => $user,
                     'token' => $token
                 ],
                 'تم تسجيل الدخول بنجاح'
@@ -153,21 +111,73 @@ class AuthController extends Controller
         }
     }
 
+//    public function verifyOtp(Request $request)
+//    {
+//
+//        $validated = $request->validate([
+//            'otp' => 'required|string|size:4',
+//            'type' => 'required|in:email,phone'
+//        ], [
+//            'otp.required' => 'رمز التحقق مطلوب',
+//            'otp.size' => 'رمز التحقق يجب أن يكون 4 أرقام',
+//            'type.required' => 'نوع التحقق مطلوب',
+//            'type.in' => 'نوع التحقق غير صحيح',
+//        ]);
+//        try {
+//            $verification = UserVerification::where('user_id', auth()->id())
+//                ->where('type', $request->type)
+//                ->where('otp', $request->otp)
+//                ->where('is_used', false)
+//                ->where('expires_at', '>', now())
+//                ->first();
+//
+//            if (!$verification) {
+//                return $this->errorResponse('رمز التحقق غير صحيح أو منتهي الصلاحية', 400);
+//            }
+//
+//            $user = auth()->user();
+//
+//            if ($request->type === 'email') {
+//                $user->is_email_verified = true;
+//                $user->email_verified_at = now();
+//            } else {
+//                $user->is_phone_verified = true;
+//                $user->phone_verified_at = now();
+//            }
+//
+//            $user->save();
+//
+//            $verification->update([
+//                'is_used' => true,
+//                'used_at' => now()
+//            ]);
+//
+//            $message = $request->type === 'email'
+//                ? 'تم تفعيل البريد الإلكتروني بنجاح'
+//                : 'تم تفعيل رقم الهاتف بنجاح';
+//
+//            return $this->successResponse(null, $message);
+//
+//        } catch (\Exception $e) {
+//            return $this->errorResponse('فشل في عملية التحقق', 500);
+//        }
+//    }
+
     public function verifyOtp(Request $request)
     {
-
         $validated = $request->validate([
-            'otp' => 'required|string|size:4',
-            'type' => 'required|in:email,phone'
+            'otp' => 'required|numeric|digits:4',
+            'type' => 'required|in:email,reset_password'
         ], [
             'otp.required' => 'رمز التحقق مطلوب',
-            'otp.size' => 'رمز التحقق يجب أن يكون 4 أرقام',
+            'otp.digits' => 'رمز التحقق يجب أن يكون 4 أرقام',
             'type.required' => 'نوع التحقق مطلوب',
             'type.in' => 'نوع التحقق غير صحيح',
         ]);
+
         try {
-            $verification = UserVerification::where('user_id', auth()->id())
-                ->where('type', $request->type)
+            // Find OTP record
+            $verification = UserVerification::where('type', $request->type)
                 ->where('otp', $request->otp)
                 ->where('is_used', false)
                 ->where('expires_at', '>', now())
@@ -177,44 +187,48 @@ class AuthController extends Controller
                 return $this->errorResponse('رمز التحقق غير صحيح أو منتهي الصلاحية', 400);
             }
 
-            $user = auth()->user();
-
-            if ($request->type === 'email') {
-                $user->is_email_verified = true;
-                $user->email_verified_at = now();
-            } else {
-                $user->is_phone_verified = true;
-                $user->phone_verified_at = now();
+            $user = User::find($verification->user_id);
+            if (!$user) {
+                return $this->errorResponse('المستخدم غير موجود', 404);
             }
-
-            $user->save();
 
             $verification->update([
                 'is_used' => true,
                 'used_at' => now()
             ]);
 
-            $message = $request->type === 'email'
-                ? 'تم تفعيل البريد الإلكتروني بنجاح'
-                : 'تم تفعيل رقم الهاتف بنجاح';
+            if ($request->type === 'email') {
+                $user->is_email_verified = true;
+                $user->email_verified_at = now();
+                $user->save();
+                $message = 'تم تفعيل البريد الإلكتروني بنجاح';
+            } elseif ($request->type === 'reset_password') {
+                $message = 'تم التحقق بنجاح، يمكنك الآن إعادة تعيين كلمة المرور';
+            }
 
             return $this->successResponse(null, $message);
-
         } catch (\Exception $e) {
             return $this->errorResponse('فشل في عملية التحقق', 500);
         }
     }
 
+
     public function resendOtp(Request $request)
     {
         $validated = $request->validate([
-            'type' => 'required|in:email,phone'
+            'phone_number' => [
+                'required',
+                'exists:users,phone_number',
+            ],
+            'type' => 'required|in:email,reset_password'
         ], [
+            'phone_number.required' => 'رقم الهاتف مطلوب',
+            'phone_number.exists' => 'المستخدم غير موجود',
             'type.required' => 'نوع التحقق مطلوب',
             'type.in' => 'نوع التحقق غير صحيح',
         ]);
         try {
-            $user = auth()->user();
+            $user = User::where('phone_number', $request->phone_number)->first();
             $otp = rand(1000, 9999);
 
             UserVerification::create([
@@ -226,6 +240,9 @@ class AuthController extends Controller
 
             if ($request->type === 'email') {
                 SendOtpJob::dispatch($user->email, $otp, 'email');
+            }
+            if($request->type === 'reset_password'){
+                SendOtpJob::dispatch($user->email, $otp, 'reset password');
             }
 
             return $this->successResponse(
@@ -262,10 +279,84 @@ class AuthController extends Controller
         }
     }
 
+    public function forgotPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'phone_number' => [
+                'required',
+                'string',
+                'regex:/^[0-9]\d{6,14}$/',
+                'exists:users,phone_number',
+            ],
+            ], [
+            'phone_number.required' => 'رقم الهاتف مطلوب',
+            'phone_number.regex' => 'صيغة رقم الهاتف غير صحيحة',
+            'phone_number.exists' => ' رقم الهاتف غير مسجل',
+        ]);
+        $phoneNumber = ltrim(preg_replace('/[^0-9]/', '', $validated['phone_number']), '0');
+
+        try {
+            $user = User::where('phone_number', $phoneNumber)->first();
+
+            if (!$user) {
+                return $this->errorResponse('المستخدم غير موجود', 404);
+            }
+
+            $otp = rand(1000, 9999);
+            UserVerification::create([
+                'user_id' => $user->id,
+                'type' => 'reset_password',
+                'otp' => $otp,
+                'expires_at' => now()->addMinutes(10),
+            ]);
+
+            // Dispatch job to send the OTP via email
+            SendOtpJob::dispatch($user->email, $otp, 'reset password');
+
+            return $this->successResponse(null, 'تم إرسال رمز إعادة تعيين كلمة المرور بنجاح');
+
+        } catch (\Exception $e) {
+            return $this->errorResponse('فشل في إرسال رمز إعادة تعيين كلمة المرور', 500);
+        }
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'phone_number' => [
+                'required',
+                'exists:users,phone_number',
+            ],
+            'password' => 'required|string|min:8|confirmed'
+        ], [
+            'phone_number.required' => 'رقم الهاتف مطلوب',
+            'phone_number.exists' => 'المستخدم غير موجود',
+            'password.required' => 'كلمة المرور الجديدة مطلوبة',
+            'password.min' => 'يجب أن تتكون كلمة المرور الجديدة من 8 أحرف على الأقل',
+            'password.confirmed' => 'تأكيد كلمة المرور غير متطابق'
+        ]);
+        try {
+            $user = User::where('phone_number', $validated['phone_number'])->first();
+
+            if (!$user) {
+                return $this->errorResponse('المستخدم غير موجود', 404);
+            }
+
+            $user->password = Hash::make($validated['password']);
+            $user->save();
+
+            return $this->successResponse(null, 'تم إعادة تعيين كلمة المرور بنجاح');
+        } catch (\Exception $e) {
+            return $this->errorResponse('فشل في إعادة تعيين كلمة المرور', 500);
+        }
+    }
+
     public function logout(Request $request)
     {
+        Auth::guard('web')->logout();   // لو عايز تفصل user العادي
+
         try {
-            $request->user()->tokens()->delete();
+            $request->user()->currentAccessToken()->delete();
 
             return $this->successResponse(null, 'تم تسجيل الخروج بنجاح');
         } catch (\Exception $e) {
