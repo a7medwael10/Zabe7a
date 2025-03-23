@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\OrderStatusEnum;
+use App\Enums\PaymentStatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -15,18 +17,21 @@ return new class extends Migration
             $table->id();
             $table->string('order_number', 20)->unique();
             $table->foreignId('user_id')->constrained()->onDelete('restrict');
-            $table->foreignId('coupon_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('delivery_company_id')->constrained()->onDelete('restrict');
             $table->foreignId('address_id')->constrained('addresses')->onDelete('restrict');
-            $table->decimal('subtotal', 10, 2)->unsigned();
-            $table->decimal('shipping_cost', 10, 2)->unsigned();
-            $table->decimal('discount', 10, 2)->unsigned()->default(0.00);
-            $table->decimal('total', 10, 2)->unsigned();
-            $table->enum('status', ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'])->default('pending');
-            $table->enum('payment_method', ['cash_on_delivery', 'credit_card', 'wallet', 'bank_transfer']);
-            $table->enum('payment_status', ['pending', 'paid', 'failed', 'refunded'])->default('pending');
+            $table->integer('subtotal');
+            $table->integer('discount');
+            $table->integer('shipping_cost');
+            $table->integer('total');
+            $table->tinyInteger('status')->default(OrderStatusEnum::PENDING->value);
+            $table->foreignId('payment_method_id')->constrained('payment_methods')->onDelete('restrict');
+            $table->tinyInteger('payment_status')->default(PaymentStatusEnum::PENDING->value);
             $table->timestamp('paid_at')->nullable();
+            $table->timestamp('slaughtered_at')->nullable();
+            $table->timestamp('packed_at')->nullable();
+            $table->timestamp('waiting_at')->nullable();
             $table->timestamp('shipped_at')->nullable();
+            $table->timestamp('on_way_at')->nullable();
             $table->timestamp('delivered_at')->nullable();
             $table->text('customer_notes')->nullable();
             $table->softDeletes();

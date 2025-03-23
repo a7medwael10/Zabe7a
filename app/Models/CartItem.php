@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class CartItem extends Model
 {
   protected $fillable = [
-      'cart_id', 'ad_id', 'unit_price', 'quantity', 'packaging_options',
-      'special_instructions', 'subtotal'
+      'cart_id', 'itemable_id','packaging_options',
+      'itemable_type',  'quantity', 'total'
   ];
 
   public function cart()
@@ -16,8 +16,8 @@ class CartItem extends Model
       return $this->belongsTo(Cart::class);
   }
 
-  public function ad()
-  {
-      return $this->belongsTo(Ad::class);
-  }
+    public function itemable()
+    {
+        return $this->morphTo();
+    }
 }

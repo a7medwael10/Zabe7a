@@ -7,7 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class Slider extends Model
 {
   protected $fillable = [
-      'image_path', 'title', 'description',
-      'target_type', 'target_id', 'target_url', 'sort_order', 'is_active'
+      'image_path', 'title', 'description','offer_id', 'sort_order', 'is_active'
   ];
+
+    public function offer()
+    {
+        return $this->belongsTo(Offer::class);
+    }
+
 }

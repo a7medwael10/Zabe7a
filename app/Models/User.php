@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes,HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -19,9 +20,9 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-      'phone', 'email', 'password', 'first_name', 'last_name', 'gender', 'avatar',
+      'phone_number', 'email', 'password', 'first_name', 'last_name', 'gender', 'avatar',
         'agree_terms', 'is_email_verified', 'is_phone_verified', 'email_verified_at',
-        'phone_verified_at', 'role'
+        'phone_verified_at', 'role','phone_country_code'
     ];
 
     /**
@@ -63,9 +64,9 @@ class User extends Authenticatable
         return $this->hasMany(Ad::class);
     }
 
-    public function carts()
+    public function cart()
     {
-        return $this->hasMany(Cart::class);
+        return $this->hasOne(Cart::class);
     }
 
     public function orders()

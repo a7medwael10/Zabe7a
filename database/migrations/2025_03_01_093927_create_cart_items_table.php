@@ -14,15 +14,13 @@ return new class extends Migration
         Schema::create('cart_items', function (Blueprint $table) {
           $table->id();
           $table->foreignId('cart_id')->constrained()->onDelete('cascade');
-          $table->foreignId('ad_id')->constrained()->onDelete('cascade');
-          $table->decimal('unit_price', 10, 2)->unsigned();
+          $table->morphs('itemable');
           $table->integer('quantity')->unsigned()->default(1);
           $table->json('packaging_options')->nullable();
-          $table->text('special_instructions')->nullable();
-          $table->decimal('subtotal', 10, 2)->unsigned()->default(0.00);
+          $table->text('notes')->nullable();
+          $table->decimal('total', 10, 2)->unsigned()->default(0.00);
           $table->timestamps();
-
-          $table->index(['cart_id', 'ad_id']);
+          $table->index(['itemable_id','cart_id']);
         });
     }
 

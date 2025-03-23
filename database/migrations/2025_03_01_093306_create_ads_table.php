@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\AdStatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,9 +14,9 @@ return new class extends Migration
     {
         Schema::create('ads', function (Blueprint $table) {
           $table->id();
-          $table->foreignId('user_id')->constrained()->onDelete('cascade');
           $table->foreignId('category_id')->constrained()->onDelete('restrict');
           $table->string('title', 150);
+          $table->string('sub_title', 150)->nullable();
           $table->string('slug', 170)->unique();
           $table->string('thumbnail_path')->nullable();
           $table->text('description');
@@ -26,13 +27,13 @@ return new class extends Migration
           $table->decimal('rating', 3, 2)->unsigned()->default(0.00);
           $table->unsignedInteger('views_count')->default(0);
           $table->unsignedInteger('reviews_count')->default(0);
-          $table->enum('status', ['draft', 'pending', 'active', 'sold_out', 'rejected'])->default('draft');
+          $table->tinyInteger('status')->default(AdStatusEnum::PENDING);
           $table->timestamp('approved_at')->nullable();
           $table->timestamp('expires_at')->nullable();
           $table->softDeletes();
           $table->timestamps();
 
-          $table->index(['user_id', 'status', 'category_id']);
+          $table->index([ 'status', 'category_id']);
         });
     }
 

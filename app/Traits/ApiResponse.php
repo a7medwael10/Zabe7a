@@ -21,10 +21,12 @@ trait ApiResponse
         return response()->json([
             'success' => false,
             'message' => $message,
-            'data' => null,
+            'data' => [],
             'code' => $code
         ], $code);
     }
+
+
 
 
 }

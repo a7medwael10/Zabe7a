@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
           $table->id();
-          $table->foreignId('parent_id')->nullable()->constrained('categories')->onDelete('set null');
+          $table->foreignId('section_id')->constrained('sections')->onDelete('cascade');
           $table->string('name', 100);
           $table->string('slug', 120)->unique();
           $table->string('logo')->nullable();
@@ -23,7 +23,7 @@ return new class extends Migration
           $table->softDeletes();
           $table->timestamps();
 
-          $table->index(['parent_id', 'is_active']);
+          $table->index(['section_id', 'is_active']);
         });
     }
 

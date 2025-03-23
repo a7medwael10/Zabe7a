@@ -15,9 +15,10 @@ return new class extends Migration
           $table->id();
           $table->foreignId('user_id')->constrained()->onDelete('cascade');
           $table->foreignId('coupon_id')->nullable()->constrained()->onDelete('set null');
-          $table->foreignId('delivery_company_id')->nullable()->constrained()->onDelete('set null');
           $table->decimal('subtotal', 10, 2)->unsigned()->default(0.00);
           $table->decimal('discount', 10, 2)->unsigned()->default(0.00);
+          $table->decimal('shipping_cost', 10, 2)->unsigned();
+          $table->decimal('total', 10, 2)->unsigned();
           $table->timestamps();
         });
     }
