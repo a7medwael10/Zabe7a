@@ -21,7 +21,8 @@ class OfferResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-tag'; // ايقونة العروض
     protected static ?string $navigationLabel = 'العروض';
-    protected static ?string $navigationGroup = 'إدارة العروض';
+    protected static ?string $modelLabel = 'عرض';
+    protected static ?string $pluralModelLabel = 'العروض';
 
 
 
@@ -129,7 +130,7 @@ class OfferResource extends Resource
                     ->label('نسبة الخصم')
                     ->suffix('%'),
 
-                Tables\Columns\TextColumn::make('offer_price')
+                Tables\Columns\TextColumn::make('price')
                     ->label('السعر بعد الخصم')
                     ->money('SAR'),
 

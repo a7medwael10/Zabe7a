@@ -20,6 +20,7 @@ class Offer extends Model
         'rating',
         'quantity_available',
         'quantity_sold',
+        'weight',
         'views_count', 'reviews_count',
         'starts_at',
         'expires_at',
@@ -44,10 +45,6 @@ class Offer extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function packagingOptions()
-    {
-        return $this->morphMany(AdPackagingOption::class, 'packageable');
-    }
 
     public function cartItems()
     {
@@ -61,7 +58,7 @@ class Offer extends Model
 
     public function favorites()
     {
-        return $this->morphMany(Favorite::class, 'favoritable');
+        return $this->morphMany(Favourite::class, 'favouriteable');
     }
 
     public function reviews()
@@ -71,6 +68,6 @@ class Offer extends Model
 
     public function sliders()
     {
-        return $this->morphMany(Slider::class, 'sliderable');
+        return $this->hasMany(Slider::class);
     }
 }

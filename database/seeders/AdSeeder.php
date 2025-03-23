@@ -15,12 +15,6 @@ class AdSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::first();
-
-        if (!$user) {
-            $this->command->warn('❗ مفيش مستخدمين مضافين. لازم تضيف يوزر.');
-            return;
-        }
 
         $categories = Category::all();
 
@@ -49,7 +43,7 @@ class AdSeeder extends Seeder
                 'rating' => rand(40, 50) / 10, // 4.0 -> 5.0
                 'views_count' => rand(10, 500),
                 'reviews_count' => rand(0, 50),
-                'status' => 'active',
+                'status' => 1,
                 'approved_at' => now(),
                 'expires_at' => now()->addDays(30),
             ]);

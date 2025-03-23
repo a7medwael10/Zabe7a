@@ -18,16 +18,10 @@ return new class extends Migration
           $table->foreignId('order_id')->nullable()->constrained()->onDelete('set null');
           $table->unsignedTinyInteger('rating');
           $table->text('comment')->nullable();
-          $table->json('images')->nullable();
-          $table->boolean('is_approved')->default(false);
-          $table->boolean('is_anonymous')->default(false);
-          $table->unsignedInteger('helpful_votes')->default(0);
-          $table->timestamp('approved_at')->nullable();
           $table->softDeletes();
           $table->timestamps();
-
           $table->unique(['user_id','reviewable_id', 'order_id'], 'unique_user_ad_order_review');
-          $table->index([ 'reviewable_id','is_approved']);
+          $table->index([ 'reviewable_id']);
           $table->index('rating');
         });
     }

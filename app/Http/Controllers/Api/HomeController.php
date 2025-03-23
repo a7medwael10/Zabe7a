@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\AdResource;
+use App\Http\Resources\OfferResource;
 use App\Models\Ad;
+use App\Models\Offer;
 use App\Models\Section;
 use App\Models\Slider;
 use App\Traits\ApiResponse;
@@ -17,7 +20,7 @@ class HomeController extends Controller
     public function slider()
     {
         $sliders = Slider::where('is_active', true)
-            ->select('id', 'image_path', 'title', 'description', 'sort_order')
+            ->select('id', 'image_path', 'title', 'description', 'sort_order','offer_id')
             ->orderBy('sort_order', 'asc')
             ->get()
             ->map(function ($slider) {
@@ -52,19 +55,43 @@ class HomeController extends Controller
     public function bestSelling()
     {
         $bestSellingAds = Ad::bestSelling()
-            ->select('id', 'title', 'slug', 'thumbnail_path', 'price', 'quantity_sold', 'rating')
             ->get()
-            ->map(function ($ad) {
-                $ad->thumbnail_path = asset('storage/'.$ad->thumbnail_path);
-                return $ad;
-            })
              ->take(10);
 
-        return response()->json([
-            'status' => true,
-            'message' => 'تم جلب الإعلانات الأكثر مبيعًا بنجاح',
-            'data' => $bestSellingAds,
-        ]);
+        return $this->successResponse(
+            AdResource::collection($bestSellingAds),
+            'تم جلب الإعلانات الأكثر مبيعًا بنجاح'
+        ,200);
     }
+
+    public function showAdOrOffer(string $type, string $id)
+    {
+
+
+        if ($type === 'ad') {
+            $ad = Ad::find($id);
+
+            if (!$ad) {
+                return $this->errorResponse('الإعلان غير موجود', 404);
+            }
+
+            return $this->successResponse(
+                 new AdResource($ad), 'تمت العملية بنجاح');
+
+        } elseif ($type === 'offer') {
+            $offer = Offer::find($id);
+
+            if (!$offer) {
+                return $this->errorResponse('العرض غير موجود', 404);
+            }
+
+            return $this->successResponse(
+                new OfferResource($offer)
+            , 'تمت العملية بنجاح');
+        }
+
+        return $this->errorResponse('نوع غير صالح', 400);
+    }
+
 
 }

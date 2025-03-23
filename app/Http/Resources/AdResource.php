@@ -16,14 +16,20 @@ class AdResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'category' => $this->category->name,
             'name' => $this->title,
+            'sub_name' => $this->sub_title,
             'slug' => $this->slug,
             'description' => $this->description,
+            'price before' => null,
+            'discount percentage %' => null,
             'price' => $this->price,
             'image' => $this->thumbnail_path
                 ? asset('storage/' . $this->thumbnail_path)
                 : null,
             'rating' => $this->rating,
+            'type' => 'ad',
+
         ];
     }
 }

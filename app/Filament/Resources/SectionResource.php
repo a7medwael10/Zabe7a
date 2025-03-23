@@ -23,8 +23,8 @@ class SectionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel = 'الأقسام الرئيسية';
-    protected static ?string $navigationGroup = 'إدارة الاقسام';
     protected static ?string $pluralModelLabel = 'الأقسام';
+    protected static ?string $modelLabel = 'قسم';
 
     public static function form(Form $form): Form
     {
@@ -55,9 +55,6 @@ class SectionResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->sortable()
-                    ->searchable(),
 
                 TextColumn::make('name')
                     ->label('الاسم')

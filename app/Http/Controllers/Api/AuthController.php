@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
+
 class AuthController extends Controller
 {
     use ApiResponse;
@@ -111,57 +112,6 @@ class AuthController extends Controller
         }
     }
 
-//    public function verifyOtp(Request $request)
-//    {
-//
-//        $validated = $request->validate([
-//            'otp' => 'required|string|size:4',
-//            'type' => 'required|in:email,phone'
-//        ], [
-//            'otp.required' => 'رمز التحقق مطلوب',
-//            'otp.size' => 'رمز التحقق يجب أن يكون 4 أرقام',
-//            'type.required' => 'نوع التحقق مطلوب',
-//            'type.in' => 'نوع التحقق غير صحيح',
-//        ]);
-//        try {
-//            $verification = UserVerification::where('user_id', auth()->id())
-//                ->where('type', $request->type)
-//                ->where('otp', $request->otp)
-//                ->where('is_used', false)
-//                ->where('expires_at', '>', now())
-//                ->first();
-//
-//            if (!$verification) {
-//                return $this->errorResponse('رمز التحقق غير صحيح أو منتهي الصلاحية', 400);
-//            }
-//
-//            $user = auth()->user();
-//
-//            if ($request->type === 'email') {
-//                $user->is_email_verified = true;
-//                $user->email_verified_at = now();
-//            } else {
-//                $user->is_phone_verified = true;
-//                $user->phone_verified_at = now();
-//            }
-//
-//            $user->save();
-//
-//            $verification->update([
-//                'is_used' => true,
-//                'used_at' => now()
-//            ]);
-//
-//            $message = $request->type === 'email'
-//                ? 'تم تفعيل البريد الإلكتروني بنجاح'
-//                : 'تم تفعيل رقم الهاتف بنجاح';
-//
-//            return $this->successResponse(null, $message);
-//
-//        } catch (\Exception $e) {
-//            return $this->errorResponse('فشل في عملية التحقق', 500);
-//        }
-//    }
 
     public function verifyOtp(Request $request)
     {
@@ -353,8 +303,6 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        Auth::guard('web')->logout();   // لو عايز تفصل user العادي
-
         try {
             $request->user()->currentAccessToken()->delete();
 
@@ -362,6 +310,11 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             return $this->errorResponse('فشل في تسجيل الخروج', 500);
         }
+    }
+
+    public function user()
+    {
+        dd(auth()->user());
     }
 
 }

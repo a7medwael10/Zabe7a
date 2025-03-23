@@ -25,10 +25,6 @@ class UserProfileController extends Controller
                 'gender' => $validated['gender'],
             ];
 
-            if ($request->hasFile('avatar')) {
-                $userData['avatar'] = $request->file('avatar')->store('avatars', 'public');
-            }
-
             $user = User::where('email', $request->email)->first();
 
             $user->update([
@@ -51,7 +47,7 @@ class UserProfileController extends Controller
                 'is_primary' => $validated['is_primary'] ?? false,
             ];
 
-            $address = Address::create($addressData);
+             Address::create($addressData);
 
             return $this->successResponse(
                  null,
@@ -64,4 +60,36 @@ class UserProfileController extends Controller
             return $this->errorResponse('فشل في اكمال البيانات', 500);
         }
     }
+
+    public function updateProfile(Request $request)
+    {
+        $user = auth('sanctum')->user();
+
+        if (!$user) {
+            return $this->errorResponse('المستخدم غير موجود', 404);
+        }
+
+        $validatedData = $request->validate([
+            'name_name'      => 'sometimes|string|max:255',
+            'last_name'      => 'sometimes|string|max:255',
+            'email'     => 'sometimes|email|unique:users,email,' . $user->id,
+            'phone'     => 'sometimes|string|unique:users,phone,' . $user->id,
+            'password'  => 'sometimes|string|min:6|confirmed',
+        ]);
+
+        if (isset($validatedData['password'])) {
+            $validatedData['password'] = bcrypt($validatedData['password']);
+        }
+
+        // Update البيانات اللي وصلت
+        $user->update($validatedData);
+
+        return $this->successResponse(
+            $user,
+            'تم تحديث بيانات المستخدم بنجاح',
+            200
+        );
+    }
+
+
 }

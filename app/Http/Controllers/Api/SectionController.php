@@ -35,6 +35,13 @@ class SectionController extends Controller
             return $this->errorResponse('لا يوجد أصناف مرتبطة بهذا القسم', 404);
         }
 
+        $categories = collect($categories)->prepend([
+            'id' => 0,
+            'name' => 'الكل',
+            'slug' => 'all'
+        ]);
+
+
         return $this->successResponse([
             'section' => $section,
             'categories' => $categories
@@ -81,51 +88,9 @@ class SectionController extends Controller
 
         $ads = $adsQuery->get();
 
-        return $this->successResponse([
-            'section' => $section->only(['name']),
-            'ads' => AdResource::collection($ads),
-        ], 'تمت العملية بنجاح');
-    }
-
-
-    public function getAdsByCategory(Request $request, $categoryId)
-    {
-        $adsQuery = Ad::where('category_id', $categoryId);
-
-        if ($request->has('sort_by')) {
-            switch ($request->sort_by) {
-                case 'best_selling':
-                    $adsQuery->bestSelling();
-                    break;
-                case 'highest_rated':
-                    $adsQuery->highestRated();
-                    break;
-                case 'price_high_to_low':
-                    $adsQuery->priceHighToLow();
-                    break;
-                case 'price_low_to_high':
-                    $adsQuery->priceLowToHigh();
-                    break;
-                case 'our_suggestions':
-                    $adsQuery->ourSuggestions();
-                    break;
-                default:
-                    $adsQuery->latest();
-                    break;
-            }
-        } else {
-            $adsQuery->latest();
-        }
-
-        $ads = $adsQuery->get();
-
-        if ($ads->isEmpty()) {
-            return $this->errorResponse('لا يوجد منتجات في هذا التصنيف داخل القسم', 404);
-        }
-
-        return $this->successResponse([
-            'ads' => AdResource::collection($ads),
-        ], 'تمت العملية بنجاح');
+        return $this->successResponse(
+            AdResource::collection($ads)
+        , 'تمت العملية بنجاح');
     }
 
     public function showAd(string $id)
@@ -140,5 +105,7 @@ class SectionController extends Controller
             'ad' => new ADResource($ad),
         ], 'تمت العملية بنجاح');
     }
+
+
 
 }

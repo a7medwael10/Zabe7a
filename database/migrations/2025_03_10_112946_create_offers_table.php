@@ -26,6 +26,7 @@ return new class extends Migration
             $table->decimal('rating', 3, 2)->unsigned()->default(0.00);
             $table->integer('quantity_sold')->unsigned()->default(0);
             $table->integer('quantity_available')->unsigned()->default(1);
+            $table->decimal('weight', 8, 2)->unsigned()->nullable();
             $table->unsignedInteger('views_count')->default(0);
             $table->unsignedInteger('reviews_count')->default(0);
             $table->timestamp('starts_at')->nullable();

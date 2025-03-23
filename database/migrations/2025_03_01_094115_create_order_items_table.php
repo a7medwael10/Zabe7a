@@ -18,8 +18,9 @@ return new class extends Migration
           $table->string('title', 150);
           $table->decimal('unit_price', 10, 2)->unsigned();
           $table->integer('quantity')->unsigned();
-          $table->json('packaging_options')->nullable();
-          $table->decimal('subtotal', 10, 2)->unsigned();
+          $table->json('packaging_options');
+          $table->text('notes')->nullable();
+          $table->decimal('total', 10, 2)->unsigned()->default(0.00);
           $table->timestamps();
 
           $table->index(['itemable_id','order_id']);

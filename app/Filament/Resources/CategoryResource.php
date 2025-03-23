@@ -69,7 +69,6 @@ class CategoryResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')->sortable(),
 
                 TextColumn::make('section.name')
                     ->label('القسم الرئيسي')

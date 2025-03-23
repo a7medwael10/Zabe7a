@@ -23,6 +23,8 @@ class SliderResource extends Resource
     protected static ?string $model = Slider::class;
     protected static ?string $navigationIcon = 'heroicon-o-film';
     protected static ?string $navigationLabel = 'الشرائح';
+    protected static ?string $modelLabel = 'شريحة';
+    protected static ?string $pluralModelLabel = 'الشرائح';
 
     public static function form(Form $form): Form
     {
@@ -39,8 +41,6 @@ class SliderResource extends Resource
                     ->default(0),
 
 
-
-
                 FileUpload::make('image_path')
                     ->label('مسار الصورة')
                     ->disk('public')
@@ -52,27 +52,11 @@ class SliderResource extends Resource
                     ->label('الوصف')
                     ->nullable(),
 
-                Select::make('sliderable_type')
-                    ->label('النوع المرتبط')
-                    ->options([
-                        Category::class => 'تصنيف',
-                        Offer::class => 'عرض',
-                        Ad::class => 'منتج',
-                    ])
-                    ->required()
-                    ->reactive(),
 
-                Select::make('sliderable_id')
-                    ->label('العنصر المرتبط')
-                    ->options(function (callable $get) {
-                        $type = $get('sliderable_type');
-                        return match ($type) {
-                            Category::class => Category::pluck('name', 'id'),
-                            Offer::class => Offer::pluck('title', 'id'),
-                            Ad::class => Ad::pluck('title', 'id'),
-                            default => [],
-                        };
-                    }),
+                Select::make('offer_id')
+                    ->label('اختر العرض')
+                    ->relationship('offer', 'title')
+                    ->required(),
 
                 Forms\Components\Toggle::make('is_active')
                     ->label('نشط')

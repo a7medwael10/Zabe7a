@@ -15,13 +15,11 @@ return new class extends Migration
           $table->id();
           $table->foreignId('cart_id')->constrained()->onDelete('cascade');
           $table->morphs('itemable');
-          $table->decimal('unit_price', 10, 2)->unsigned();
           $table->integer('quantity')->unsigned()->default(1);
           $table->json('packaging_options')->nullable();
-          $table->text('special_instructions')->nullable();
-          $table->decimal('subtotal', 10, 2)->unsigned()->default(0.00);
+          $table->text('notes')->nullable();
+          $table->decimal('total', 10, 2)->unsigned()->default(0.00);
           $table->timestamps();
-
           $table->index(['itemable_id','cart_id']);
         });
     }

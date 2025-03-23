@@ -16,7 +16,9 @@ class OfferResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'category' => $this->category->name,
             'name' => $this->title,
+            'sub_name' => $this->sub_title,
             'slug' => $this->slug,
             'description' => $this->description,
             'image' => $this->thumbnail_path
@@ -24,9 +26,10 @@ class OfferResource extends JsonResource
                 : null,
             'price before' => $this->original_price,
             'discount percentage %' => $this->discount_percentage,
-            'price after' => $this->offer_price,
+            'price' => $this->price,
             'gift' => $this->gift,
             'rating' => $this->rating,
+            'type' => 'offer',
 
         ];    }
 }

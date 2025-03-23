@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\AdStatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -26,7 +27,7 @@ return new class extends Migration
           $table->decimal('rating', 3, 2)->unsigned()->default(0.00);
           $table->unsignedInteger('views_count')->default(0);
           $table->unsignedInteger('reviews_count')->default(0);
-          $table->enum('status', ['draft', 'pending', 'active', 'sold_out', 'rejected'])->default('draft');
+          $table->tinyInteger('status')->default(AdStatusEnum::PENDING);
           $table->timestamp('approved_at')->nullable();
           $table->timestamp('expires_at')->nullable();
           $table->softDeletes();

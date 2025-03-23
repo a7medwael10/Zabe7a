@@ -28,6 +28,7 @@ class OfferSeeder extends Seeder
                 'rating' => 4.8,
                 'quantity_sold' => 20,
                 'quantity_available' => 50,
+                'weight' => rand(1, 5),
                 'views_count' => 120,
                 'reviews_count' => 15,
                 'starts_at' => now()->subDays(2),

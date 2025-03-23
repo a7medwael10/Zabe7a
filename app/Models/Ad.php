@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AdStatusEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -52,7 +53,7 @@ class Ad extends Model
 
     public function favorites()
     {
-        return $this->morphMany(Favorite::class, 'favoritable');
+        return $this->morphMany(Favourite::class, 'favouriteable');
     }
 
     public function reviews()
@@ -60,38 +61,34 @@ class Ad extends Model
         return $this->morphMany(Review::class, 'reviewable');
     }
 
-    public function sliders()
-    {
-        return $this->morphMany(Slider::class, 'sliderable');
-    }
 
     public function scopeBestSelling($query)
     {
-        return $query->where('status', 'active')
+        return $query->where('status', AdStatusEnum::AVAILABLE->value)
         ->orderByDesc('quantity_sold');
     }
 
     public function scopeHighestRated($query)
     {
-        return $query->where('status', 'active')
+        return $query->where('status', AdStatusEnum::AVAILABLE->value)
             ->orderByDesc('rating');
     }
 
     public function scopePriceHighToLow($query)
     {
-        return $query->where('status', 'active')
+        return $query->where('status', AdStatusEnum::AVAILABLE->value)
             ->orderByDesc('price');
     }
 
     public function scopePriceLowToHigh($query)
     {
-        return $query->where('status', 'active')
+        return $query->where('status', AdStatusEnum::AVAILABLE->value)
             ->orderBy('price');
     }
 
     public function scopeOurSuggestions($query)
     {
-        return $query->where('status', 'active')
+        return $query->where('status', AdStatusEnum::AVAILABLE->value)
             ->orderByDesc('created_at');
     }
 }

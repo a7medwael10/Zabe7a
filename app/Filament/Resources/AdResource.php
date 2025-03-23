@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\AdStatusEnum;
 use App\Filament\Resources\AdResource\Pages;
 use App\Filament\Resources\AdResource\RelationManagers;
 use App\Models\Ad;
@@ -29,7 +30,9 @@ class AdResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel = 'المنتجات';
-    protected static ?string $navigationGroup = 'إدارة المنتجات';
+    protected static ?string $modelLabel = 'منتج';
+    protected static ?string $pluralModelLabel = 'المنتجات';
+
 
     public static function form(Form $form): Form
     {
@@ -85,13 +88,12 @@ class AdResource extends Resource
                 Radio::make('status')
                     ->label('الحالة')
                     ->options([
-                        'draft' => 'مسودة',
-                        'pending' => 'قيد المراجعة',
-                        'active' => 'نشط',
-                        'sold_out' => 'منتهي الكمية',
-                        'rejected' => 'مرفوض',
+                        AdStatusEnum::DRAFT->value     => AdStatusEnum::DRAFT->label(),
+                        AdStatusEnum::PENDING->value   => AdStatusEnum::PENDING->label(),
+                        AdStatusEnum::AVAILABLE->value => AdStatusEnum::AVAILABLE->label(),
+                        AdStatusEnum::SOLD_OUT->value  => AdStatusEnum::SOLD_OUT->label(),
                     ])
-                    ->default('draft')
+                    ->default(AdStatusEnum::DRAFT->value)
                     ->required(),
 
                 DateTimePicker::make('approved_at')
@@ -123,15 +125,17 @@ class AdResource extends Resource
                     ->label('السعر')
                     ->money('SAR'), // عدل العملة حسب عملتك
 
-                BadgeColumn::make('status')
+                TextColumn::make('status')
                     ->label('الحالة')
-                    ->colors([
-                        'secondary' => 'draft',
-                        'warning' => 'pending',
-                        'success' => 'active',
-                        'danger' => 'rejected',
-                        'gray' => 'sold_out',
-                    ])
+                    ->formatStateUsing(fn ($state) => AdStatusEnum::from($state)->label())
+                    ->badge()
+                    ->color(fn ($state) => match ($state) {
+                        AdStatusEnum::DRAFT->value     => 'gray',
+                        AdStatusEnum::PENDING->value   => 'warning',
+                        AdStatusEnum::AVAILABLE->value => 'success',
+                        AdStatusEnum::SOLD_OUT->value  => 'danger',
+                        default                        => 'gray',
+                    })
                     ->sortable(),
 
 

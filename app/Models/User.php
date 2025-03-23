@@ -64,9 +64,9 @@ class User extends Authenticatable
         return $this->hasMany(Ad::class);
     }
 
-    public function carts()
+    public function cart()
     {
-        return $this->hasMany(Cart::class);
+        return $this->hasOne(Cart::class);
     }
 
     public function orders()

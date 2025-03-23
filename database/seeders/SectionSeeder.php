@@ -28,7 +28,7 @@ class SectionSeeder extends Seeder
             [
                 'name' => 'مشويات',
                 'slug' => 'mshwyat',
-                'icon' => 'ng',
+                'icon' => 'sections-icons/section.png',
                 'description' => 'قسم المشويات الطازجة',
             ],
             [

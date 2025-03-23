@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'moyasar' => [
+        'secret_key' => env('MOYASAR_SECRET_KEY'),
+        'public_key' => env('MOYASAR_PUBLIC_KEY')
+    ],
+
+    'tabby' => [
+        'secret_key' => env('TABBY_SECRET_KEY'),
+        'public_key' => env('TABBY_PUBLIC_KEY')
+    ]
+
 ];

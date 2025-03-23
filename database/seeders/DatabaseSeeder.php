@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
             SectionSeeder::class,
             CategorySeeder::class,
             AdSeeder::class,
+            OfferSeeder::class,
+            SliderSeeder::class,
 
         ]);
     }
